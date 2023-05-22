@@ -93,13 +93,7 @@ rules
 
 rules[(rules["confidence"]>0.1)&(rules["lift"]>5)&(rules["support"]>0.02)]
 
-#Görev 3: Sepet İçerisindeki Ürün Id’leri Verilen Kullanıcılara Ürün Önerisinde Bulunma
 
-#Adım 1: check_id fonksiyonunu kullanarak verilen ürünlerin isimlerini bulunuz.
-
-#Adım 2: arl_recommender fonksiyonunu kullanarak 3 kullanıcı için ürün önerisinde bulununuz.
-
-#Adım 3: Önerilecek ürünlerin isimlerine bakınız.
 
 
 
