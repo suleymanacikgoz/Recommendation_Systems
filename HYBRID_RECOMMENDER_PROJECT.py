@@ -3,8 +3,6 @@ import pandas as pd
 pd.pandas.set_option('display.max_columns', None)
 pd.pandas.set_option('display.width', 100)
 
-# Adım 1: Movie ve Rating veri setlerini okutunuz.
-# movieId, film adı ve filmin tür bilgilerini içeren veri seti
 movie = pd.read_csv('5.Hafta/movie.csv')
 movie.head() # movieId, title, genres
 movie.shape # 27278 film
