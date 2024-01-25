@@ -4,72 +4,48 @@ pd.pandas.set_option('display.max_columns', None)
 pd.pandas.set_option('display.width', 100)
 
 movie = pd.read_csv('5.Hafta/movie.csv')
-movie.head() # movieId, title, genres
-movie.shape # 27278 film
+movie.head() 
+movie.shape
 
-# User, film adı, filme verilen oy ve zaman bilgisini içeren veri seti
 rating = pd.read_csv('5.Hafta/rating.csv')
 rating.head()
 rating.shape
-rating["userId"].nunique() # 138493 farklı izleyici.
+rating["userId"].nunique() 
 
 
-# Adım 2: Rating veri setine filmlerin isimlerini ve türünü movie film setini kullanrak ekleyiniz.
-# Ratingdeki kullanıcıların oy kullandıkları filmlerin sadece id'si var.
-# Idlere ait film isimlerini ve türünü movie veri setinden ekliyoruz.
 
-# iki veri setini birleştirebilecegimiz ortak bir deger arıyoruz bu nedir?
-# aslında burada filmlerin title'ları ve genres bilgisini ekliyoruz.
+
 df = movie.merge(rating, how="left", on="movieId")
 
-# BONUS: eger iki tabloda birleştirebilecegimiz ortak değişkeni ismi her iki tabloda farklı ise merge etmek için kullanılan yöntem:
-# df= pd.merge(movie,rating, left_on ='MOVIEID, right_on = 'movieid')
-
-# tablo son haliyle;
 df.head(10)
 df.shape
 
 
-# Adım 3: Herbir film için toplam kaç kişinin oy kullandığını hesaplayınız
-# Toplam oy kullanılma sayısı 1000'un altında olan filmleri veri setinden çıkarınız.
-# Kalabalıgın bilgeligi.
 
 
-# Herbir film için toplam kaç kişinin oy kullanıldığını hesaplıyoruz.
+
 df["title"].value_counts()
-comment_counts = pd.DataFrame(df["title"].value_counts()) # comment_count değişkenine atıyoruz.
+comment_counts = pd.DataFrame(df["title"].value_counts()) 
 comment_counts
 
-# Toplam oy kullanılma sayısı 1000'in altında olan filmlerin isimlerini rare_movies de tutuyoruz.
-# Ve veri setinden çıkartıyoruz
-# bunu neden yapıyoruz?
+
 comment_counts["title"] <= 1000
 rare_movies = comment_counts[comment_counts["title"] <= 1000].index
 
-# rare movies degerlerini degerlendirme alan filmler listesinde bir göz atalım:
+
 df["title"].isin(rare_movies)
 
-# rare_movies degerlerini cıkardıgımızda kalan degerlendirilmiş filmleri common_movies olarak kaydediyoruz.
+
 df[~df["title"].isin(rare_movies)].head()
-common_movies = df[~df["title"].isin(rare_movies)] # isin true,false döndürür.
-# yine tüm veri mevcut userid ve puanları sebebiyle filmler cokluyor durumda.
-common_movies.shape #  degerlendirme sayısını önemseyebilecegimiz filmler.
+common_movies = df[~df["title"].isin(rare_movies)] 
+
+common_movies.shape
 
 
-# Adım 4: # index'te userID'lerin sutunlarda film isimlerinin ve değer olarakta ratinglerin bulunduğu
-# dataframe için pivot table oluşturunuz.
 
-#common_movies : 1000'den az oy almıs filmlerin elenmiş haliyle kullanıcıların puanlarını tutuldugu df
 user_movie_df = common_movies.pivot_table(index=["userId"], columns=["title"], values="rating")
 user_movie_df.head()
 
-# alternatif pivot tablo olusturma:
-# common_movies.groupby(['userId', 'title'])['rating'].mean().unstack().head()  # her kullanıcının her filme tek bir puanı oldugundan mean direkt puanını belirtir.
-
-
-# olusturulan tabloda, hangi kullanıcı hangi filme degerlendirme yapmıs bilgisi okunabilir.
-
-# Adım 5: Yukarıda yapılan tüm işlemleri fonksiyonlaştıralım
 def create_user_movie_df():
     import pandas as pd
     movie = pd.read_csv('/Users/dlaraalcan/Desktop/movie.csv')
@@ -84,48 +60,26 @@ def create_user_movie_df():
 user_movie_df = create_user_movie_df()
 user_movie_df.head()
 
-#############################################
-# Görev 2: Öneri Yapılacak Kullanıcının İzlediği Filmlerin Belirlenmesi
-#############################################
+user_movie_df.index[0:5]
 
-# Adım 1: Rastgele bir kullanıcı id'si seçiniz.
-random_user = 108170
-
-# Adım 2: Seçilen kullanıcıya ait gözlem birimlerinden oluşan random_user_df adında yeni bir dataframe oluşturunuz.
-
-user_movie_df.index[0:5]# kullanıcı id'leri
-
-# user_movie_df create edilmiş veriseti.
 random_user_df = user_movie_df[user_movie_df.index == random_user]
 random_user_df.head()
-# secilen random_user'ın izlediği veya izlemedigi tüm filmlere erişmiş olduk.
-# izledigi filmlere ait hucrelerde degerlendirme bulunurken, izlemedigi filmler nan degerini alır.
+
+random_user_df.notna()  
+random_user_df.notna().any() 
 
 
-# Adım 3: Seçilen kullanıcının oy kullandığı filmleri movies_watched adında bir listeye atayınız.
-# random_user_df.columns # sütunlar, hangi sütunlar ?
-random_user_df.notna()  # true,false döndürür. na mi? na degil mi?
-random_user_df.notna().any() # na olmayan degerler
-
-# columns secilmesinin sebebi film isimleri columns
 movies_watched = random_user_df.columns[random_user_df.notna().any()].tolist()
-movies_watched # random user'ın izledigi filmler listesi:
+movies_watched 
 
 
-#############################################
-# Görev 3: Aynı Filmleri İzleyen Diğer Kullanıcıların Verisine ve Id'lerine Erişmek
-#############################################
 
-# Adım 1: Seçilen kullanıcının izlediği fimlere ait sutunları user_movie_df'ten seçiniz ve movies_watched_df adında yeni bir dataframe oluşturuyoruz.
-user_movie_df.head() # tum kullanıcıların filmlere ait oyları ( var veya yok)
-movies_watched_df = user_movie_df[movies_watched] # movies_watched: random user'ın izledigi filmler listesi. Bu filmler ile ilgileniyoruz. (fancy index ile gercekleştiriyoruz)
-movies_watched_df.head() # tüm userid'ler mevcut fakat sadece secilen random user ın izledigi filmler bulunuyor.
-movies_watched_df.shape # 186 film izlemiş
+user_movie_df.head()
+movies_watched_df = user_movie_df[movies_watched] 
+movies_watched_df.head() 
+movies_watched_df.shape 
 
 
-# Adım 2: Herbir kullancının seçili user'in izlediği filmlerin kaçını izlediği bilgisini taşıyan user_movie_count adında yeni bir dataframe oluşturunuz.
-# Ve yeni bir df oluşturuyoruz.
-#movies_watched_df.T : userid sutuna, filmler satıra gelmesi için
 user_movie_count = movies_watched_df.T.notnull().sum() # Null olanlar kişinin o filmi izlemedigini belirtir.
 user_movie_count = user_movie_count.reset_index()
 user_movie_count.head()
